@@ -21,6 +21,7 @@ class CounterView(
 
     var binding: ComponentCounterBinding
     var result: Int = 0
+    var resultCallback: (result: Int) -> (Unit) = {}
 
     init {
         binding = ComponentCounterBinding.inflate(LayoutInflater.from(context), this, true)
@@ -51,12 +52,14 @@ class CounterView(
     private fun addPoint() {
         result++
         binding.result.text = result.toString()
+        resultCallback(result)
     }
 
     private fun subtractPoint() {
         if (result == 0) return
         result--
         binding.result.text = result.toString()
+        resultCallback(result)
     }
 
     fun reset() {

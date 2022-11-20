@@ -4,21 +4,23 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
-import com.artf.composeinview.R
+import com.artf.composeinview.databinding.ComponentCounterBinding
 import com.artf.composeinview.databinding.DialogResultBinding
+import com.artf.composeinview.ui.component.CounterView
 import android.app.AlertDialog as AlertDialogWidget
 
 class ResultDialog : DialogFragment() {
@@ -50,37 +52,23 @@ class ResultDialog : DialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MaterialTheme {
-                    val state = viewModel.msg.observeAsState()
                     AlertDialog(
-                        onDismissRequest = { dismiss() },
                         modifier = Modifier.fillMaxWidth(),
-                        title = {
+                        onDismissRequest = { dismiss() },
+                        text = {
                             Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                text = state.value ?: ""
+                                text = "Compose",
+                                textAlign = TextAlign.Center
                             )
                         },
                         buttons = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Button(onClick = {
-                                    viewModel.setReset(true)
-                                    dismiss()
-                                }) {
-                                    Text(text = getString(R.string.reset))
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(onClick = { dismiss() }) {
-                                    Text(text = getString(R.string.ok))
-                                }
+                            Column {
+                                XMLCounter()
+                                XMLCounterBinding()
                             }
                         }
                     )
+
                 }
             }
         }
@@ -89,5 +77,32 @@ class ResultDialog : DialogFragment() {
         val dialog = AlertDialogWidget.Builder(requireContext()).setView(view).create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return dialog
+    }
+}
+
+@Composable
+fun XMLCounter() {
+    var resultState by remember { mutableStateOf(0) }
+    AndroidView(
+        factory = { context ->
+            CounterView(context).apply {
+                // Example of View -> Compose communication
+                resultCallback = {
+                    resultState = it
+                }
+            }
+        },
+        update = { counterView ->
+            // Example of Compose -> View communication
+            counterView.binding.result.text = resultState.toString()
+        }
+    )
+}
+
+@Composable
+fun XMLCounterBinding() {
+    AndroidViewBinding(ComponentCounterBinding::inflate) {
+        down.setOnClickListener { /*...*/ }
+        up.setOnClickListener { /*...*/ }
     }
 }
