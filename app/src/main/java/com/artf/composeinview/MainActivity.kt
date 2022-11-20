@@ -1,18 +1,24 @@
 package com.artf.composeinview
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.viewinterop.AndroidViewBinding
+import com.artf.composeinview.databinding.ActivityMainBinding
 import com.artf.composeinview.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
-                .commitNow()
+        setContent {
+            MaterialTheme {
+                AndroidViewBinding(ActivityMainBinding::inflate) {
+                    val fragment = container.getFragment<MainFragment>()
+                    //...
+                }
+            }
         }
     }
 }
